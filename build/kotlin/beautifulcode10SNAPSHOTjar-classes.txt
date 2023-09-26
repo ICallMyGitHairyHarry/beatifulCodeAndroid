@@ -1,0 +1,1 @@
+C:\Users\79500\IdeaProjects\beautifulcode\build\classes\kotlin\main\Category.class;C:\Users\79500\IdeaProjects\beautifulcode\build\classes\kotlin\main\CategoryOrFeatureOrEndElement.class;C:\Users\79500\IdeaProjects\beautifulcode\build\classes\kotlin\main\Feature.class;C:\Users\79500\IdeaProjects\beautifulcode\build\classes\kotlin\main\MainKt.class
