@@ -1,4 +1,3 @@
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -21,61 +20,162 @@ class MainKtTest {
         Feature(17, 4, "камера", 15),
     )
 
-    @BeforeEach
-    fun setUp() {
+    private val resultList = getCategoriesWithFeatures(categories, features)
+    /* Чтобы протестировать другие функции */
+//    private val resultList = getCategoriesWithFeaturesOptimized(categories, features)
+//    private val resultList = groupCategoriesWithFeatures(categories, features)
 
+
+    @Test
+    fun first_element_is_category() {
+        // categoryId всегда != null
+        resultList[0].run {
+            assertTrue(
+                categoryName != null && featureId == null && featureTitle == null && featureValue == null,
+                "Первый элемент не является категорией: $this"
+            )
+        }
     }
 
     @Test
-    fun getCategoriesWithFeatures() {
-        val resultList = getCategoriesWithFeatures(categories, features)
-        // check first element
-        resultList[0].run {
-            assertNotNull(categoryId); assertNotNull(categoryName)
-            assertNull(featureId); assertNull(featureTitle); assertNull(featureValue)
+    fun category_element_content() {
+        for (element in resultList) {
+            if (element.categoryName != null) {
+                assertTrue(
+                    element.featureId == null && element.featureTitle == null && element.featureValue == null,
+                    "Одна или несколько категорий имеют неправильное содержание, " +
+                            "первая неверная категория: $element",
+                )
+            }
         }
-        // // check the order and the contents of all elements
+    }
+
+    @Test
+    fun feature_element_content() {
+        for (element in resultList) {
+            if (element.featureId != null) {
+                assertTrue(
+                    element.categoryName == null && element.featureTitle != null && element.featureValue != null,
+                    "Одна или несколько особенностей имеют неправильное содержание, " +
+                            "первая неверная особенность: $element",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun end_element_content() {
+        for (element in resultList) {
+            if (element.categoryName == null && element.featureId == null) {
+                assertTrue(
+                    element.featureTitle == null && element.featureValue == null,
+                    "Один или несколько концевиков имеют неправильное содержание, " +
+                            "первый неверный концевик: $element",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun feature_of_current_category() {
         var currentCategoryId = 0
         for (element in resultList) {
             if (element.categoryName != null) {
-                //messages
-                assertNotNull(element.categoryId)
-                assertNull(element.featureId)
-                assertNull(element.featureTitle)
-                assertNull(element.featureValue)
                 currentCategoryId = element.categoryId
-                //check for the end element
-            }
-            else if (element.featureTitle != null) {
-                assertNotNull(element.categoryId)
-                assertNotNull(element.featureId)
-                assertNotNull(element.featureValue)
-                // element.categoryName is always null here
-                assertEquals(element.categoryId, currentCategoryId)
-            }
-            else {
-                assertNotNull(element.categoryId)
-                // element.categoryName is always null here
-                assertNull(element.featureId)
-                // element.featureTitle is always null here
-                assertNull(element.featureValue)
-                assertEquals(element.categoryId, currentCategoryId)
+            } else if (element.featureId != null) {
+                // Эта функция также ловит баг, когда после концевика идёт особенность
+                assertEquals(
+                    element.categoryId, currentCategoryId,
+                    "Неверный порядок особенностей. " +
+                            "В категории $currentCategoryId присутствует особенность категории ${element.categoryId}. " +
+                            "Первая неверная особенность: $element"
+                )
             }
         }
-
     }
 
     @Test
-    fun getCategoriesWithFeaturesOptimized() {
+    fun end_element_of_current_category() {
+        var currentCategoryId = 0
+        for (element in resultList) {
+            if (element.categoryName != null) {
+                currentCategoryId = element.categoryId
+            } else if (element.featureId == null) {
+                assertEquals(
+                    element.categoryId, currentCategoryId,
+                    "Концевик не соответствует закрываемой категории, " +
+                            "id_категории=$currentCategoryId, id_концевика=${element.categoryId}. "
+                )
+            }
+        }
     }
 
     @Test
-    fun groupCategoriesWithFeatures() {
+    fun end_element_exists() {
+        resultList.run {
+            var currentCategoryId = 0
+            for (i in this.indices) {
+                if (this[i].categoryName != null) {
+                    currentCategoryId = this[i].categoryId
+                } else if (this[i].featureTitle != null) {
+                    try {
+                        /* После особенности всегда идёт элемент с той же id категории: другая особенность или концевик.
+                        В противном случае либо идёт особеность или концевик с неверным id,
+                        либо сразу идёт новая категория, концевик отстутствует.
+                        Неверные id ловятся предыдущими тестами, отстутвие концевика - этим тестом. */
+                        assertEquals(
+                            this[i + 1].categoryId, currentCategoryId,
+                            "У категории с id=$currentCategoryId отсутствует концевик. " +
+                                    "Последняя особенность категории: ${this[i]}"
+                        )
+                    } catch (e: ArrayIndexOutOfBoundsException) {
+                        fail(
+                            "У категории с id=$currentCategoryId отсутствует концевик. " +
+                                    "Последняя особенность категории: ${this[i]}"
+                        )
+                    }
+
+                }
+            }
+        }
     }
+
+    /* Почти первоначальный вариант тест-функции, породивший все тесты
+    @Test
+    fun getCategoriesWithFeatures() {
+        resultList.run {
+            var currentCategoryId = 0
+            for (i in this.indices) {
+                if (this[i].categoryName != null) {
+                    assertNotNull(this[i].categoryId)
+                    assertNull(this[i].featureId)
+                    assertNull(this[i].featureTitle)
+                    assertNull(this[i].featureValue)
+                    currentCategoryId = this[i].categoryId
+                } else if (this[i].featureTitle != null) {
+                    assertNotNull(this[i].categoryId)
+                    assertNotNull(this[i].featureId)
+                    assertNotNull(this[i].featureValue)
+                    // element.categoryName is always null here
+                    assertEquals(this[i].categoryId, currentCategoryId)
+                    // catch
+                    assertEquals(this[i + 1].categoryId, currentCategoryId)
+                } else {
+                    assertNotNull(this[i].categoryId)
+                    // element.categoryName is always null here
+                    assertNull(this[i].featureId)
+                    // element.featureTitle is always null here
+                    assertNull(this[i].featureValue)
+                    assertEquals(this[i].categoryId, currentCategoryId)
+                }
+            }
+        }
+    }
+    */
 }
 
 /*
- Моё решение также плохо тем, что его сложно тестировать.
+ Моё решение также плохо тем, что его неудобно тестировать.
  Решение с Sealed Class'ом было бы тестировать намного проще: можно было бы проверять, что элемент является
  экземпляром такого-то класса ( assertIs<>() ).
 */
