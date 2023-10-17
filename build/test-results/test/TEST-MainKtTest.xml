@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="MainKtTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2023-10-16T19:04:16" hostname="DESKTOP-6VNNOPS" time="0.028">
+  <properties/>
+  <testcase name="end_element_content()" classname="MainKtTest" time="0.018"/>
+  <testcase name="feature_of_current_category()" classname="MainKtTest" time="0.002"/>
+  <testcase name="end_element_of_current_category()" classname="MainKtTest" time="0.002"/>
+  <testcase name="category_element_content()" classname="MainKtTest" time="0.001"/>
+  <testcase name="feature_element_content()" classname="MainKtTest" time="0.001"/>
+  <testcase name="end_element_exists()" classname="MainKtTest" time="0.001"/>
+  <testcase name="first_element_is_category()" classname="MainKtTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
